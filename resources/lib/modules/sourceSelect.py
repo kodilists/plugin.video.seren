@@ -51,7 +51,7 @@ def build_display_title(source):
     return title
 
 
-def sourceSelect(source_list, info):
+def sourceSelect(uncached_sources, source_list, info):
     try:
         if len(source_list) == 0:
             return None
@@ -61,7 +61,7 @@ def sourceSelect(source_list, info):
             display_list.append(build_display_title(source))
 
         if tools.getSetting('general.sourceselect') == '1':
-            window = source_select_list(display_list, info)
+            window = source_select_list(uncached_sources, display_list, info)
             selection = window.doModal()
             del window
 
@@ -87,7 +87,7 @@ def sourceSelect(source_list, info):
 
 class source_select_list(tools.dialogWindow):
 
-    def __init__(self, display_list, info):
+    def __init__(self, uncached_sources, display_list, info):
         self.closed = False
         self.position = -1
 

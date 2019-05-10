@@ -3,13 +3,15 @@
 import random
 import re
 import copy
+import xbmc
 
 from difflib import SequenceMatcher
 from requests import Session
 from resources.lib.common import tools
 
-COMMON_VIDEO_EXTENSIONS = ['.m4v', '.mkv', '.mka', '.mp4', '.avi', '.mpeg', '.asf', '.flv', '.m4a', '.aac', '.nut',
-                           '.ogg']
+COMMON_VIDEO_EXTENSIONS = xbmc.getSupportedMedia('video').split('|')
+
+COMMON_VIDEO_EXTENSIONS = [i for i in COMMON_VIDEO_EXTENSIONS if i != '' and i != '.zip']
 
 BROWSER_AGENTS = [
     'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
@@ -61,7 +63,6 @@ def simularity_compare(check_list, compare_list):
         import traceback
         traceback.print_exc()
         return None
-
 
 def getQuality(release_title):
     quality = 'SD'
@@ -128,7 +129,9 @@ def clean_title(title, broken=None):
 
     title = re.sub(r'\:|\\|\/|\,|\!|\?|\(|\)|\'|\"|\\|\[|\]|\-|\_|\.', ' ', title)
     title = re.sub(r'\s+', ' ', title)
+    title = title.replace('  ', ' ')
     title = re.sub(r'\&', 'and', title)
+
     return title.strip()
 
 
@@ -156,7 +159,7 @@ def check_title_match(title_parts, release_title, simple_info):
     if release_title.startswith(title):
         return True
 
-    release_title = remove_from_title(release_title, get_quality(release_title))
+    release_title = remove_from_title(release_title, getQuality(release_title))
     if release_title.startswith(title):
         return True
 
@@ -407,8 +410,8 @@ def torrentCacheStrings(args, strict=False):
         relaxed_strings = [
             'episode %s ' % episode_number.zfill(2),
             'episode %s ' % episode_number,
-            ' ep%s' % episode_number,
-            ' ep%s' % episode_number.zfill(2),
+            ' ep%s ' % episode_number,
+            ' ep%s ' % episode_number.zfill(2),
             ]
         episodeStrings += relaxed_strings
 
