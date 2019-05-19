@@ -1125,3 +1125,8 @@ msgstr ""
 msgctxt "#40153"
 msgid "Play From Random Episode"
 msgstr ""
+
+msgctxt "#40154"
+msgid "TV Lists"
+msgstr ""
+

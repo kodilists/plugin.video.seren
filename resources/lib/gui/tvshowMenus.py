@@ -78,11 +78,30 @@ class Menus:
         tools.addDirectoryItem(tools.lang(40123), 'showYears', '', '')
         tools.addDirectoryItem(tools.lang(32062), 'tvGenres', '', '')
         tools.addDirectoryItem(tools.lang(40151), 'showsByActor', '', '')
+        tools.addDirectoryItem('TV Lists', 'showsLists', '', '')
+        tools.addDirectoryItem('Airing Today', 'tvAiringToday', '', '')
         # show genres is now labeled as tvGenres to support genre icons in skins
         if tools.getSetting('searchHistory') == 'false':
             tools.addDirectoryItem(tools.lang(32016), 'showsSearch', '', '')
         else:
             tools.addDirectoryItem(tools.lang(32016), 'showsSearchHistory', '', '')
+        tools.closeDirectory('addons')
+
+    def showsLists(self):
+
+        tools.addDirectoryItem('IMDB Top Rated Shows', 'showsIMDBTop&page=1', '', '')
+        tools.addDirectoryItem('Rolling Stone 100 Greatest', 'showsRollingStoneTop&page=1', '', '')
+        tools.addDirectoryItem('New on Netflix', 'showsNewNetflix', '', '')
+        tools.addDirectoryItem('New on Amazon', 'showsNewAmazon', '', '')
+        tools.addDirectoryItem('New on US Cable', 'showsNewCable', '', '')
+        tools.closeDirectory('addons')
+
+    def tvAiringToday(self):
+
+        tools.addDirectoryItem('All', 'showsAiringAll', '', '')
+        tools.addDirectoryItem('Reality TV', 'showsAiringReality', '', '')
+        tools.addDirectoryItem('News and Talk show', 'showsAiringNewsTalk', '', '')
+        tools.addDirectoryItem('TV Shows', 'showsAiringTV', '', '')
         tools.closeDirectory('addons')
 
     def myShows(self):
@@ -93,8 +112,207 @@ class Menus:
         tools.addDirectoryItem('Upcoming Episodes', 'myUpcomingEpisodes', '', '')
         tools.addDirectoryItem('Unfinished Shows in Collection', 'showsMyProgress', '', '')
         tools.addDirectoryItem('Recent Episodes', 'showsMyRecentEpisodes', '', '')
+        tools.addDirectoryItem('Calendar', 'tvMyCalendar', '', '')
         tools.addDirectoryItem('My Show Lists', 'myTraktLists&actionArgs=shows', '', '')
         tools.closeDirectory('addons')
+
+    def tvMyCalendar(self):
+        tools.addDirectoryItem('Yesterday', 'tvMyCalendarYesterday', '', '')
+        tools.addDirectoryItem('Today', 'tvMyCalendarToday', '', '')
+        tools.addDirectoryItem('Tomorrow', 'tvMyCalendarTomorrow', '', '')
+        tools.addDirectoryItem('Previous 7 Days', 'tvMyCalendarPreviousWeek', '', '')
+        tools.addDirectoryItem('Next 7 Days', 'tvMyCalendarNextWeek', '', '')
+        tools.closeDirectory('addons')
+
+    def showsNewNetflix(self):
+
+        hidden = HiddenDatabase().get_hidden_items('recommendations', 'shows')
+        datestring = datetime.datetime.today() - datetime.timedelta(days=29)
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/60?watchnow=netflix' %
+                                  (datestring.strftime('%d-%m-%Y')))
+
+        if trakt_list is None:
+            return
+        # For some reason trakt messes up their list and spits out tons of duplicates so we filter it
+        duplicate_filter = []
+        temp_list = []
+        for i in trakt_list:
+            if not i['show']['ids']['tvdb'] in duplicate_filter:
+                duplicate_filter.append(i['show']['ids']['tvdb'])
+                temp_list.append(i)
+
+        trakt_list = temp_list
+
+        trakt_list = [i for i in trakt_list if i['show']['ids']['trakt'] not in hidden]
+
+        if len(trakt_list) > 40:
+            trakt_list = trakt_list[:40]
+        self.showListBuilder(trakt_list)
+        tools.closeDirectory('tvshows')
+
+    def showsNewAmazon(self):
+        
+        hidden = HiddenDatabase().get_hidden_items('recommendations', 'shows')
+        datestring = datetime.datetime.today() - datetime.timedelta(days=29)
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/60?watchnow=amazon_buy,amazon_prime' %
+                                  (datestring.strftime('%d-%m-%Y')))
+
+        if trakt_list is None:
+            return
+        # For some reason trakt messes up their list and spits out tons of duplicates so we filter it
+        duplicate_filter = []
+        temp_list = []
+        for i in trakt_list:
+            if not i['show']['ids']['tvdb'] in duplicate_filter:
+                duplicate_filter.append(i['show']['ids']['tvdb'])
+                temp_list.append(i)
+
+        trakt_list = temp_list
+
+        trakt_list = [i for i in trakt_list if i['show']['ids']['trakt'] not in hidden]
+
+        if len(trakt_list) > 40:
+            trakt_list = trakt_list[:40]
+        self.showListBuilder(trakt_list)
+        tools.closeDirectory('tvshows')
+
+    def showsNewCable(self):
+
+        hidden = HiddenDatabase().get_hidden_items('recommendations', 'shows')
+        datestring = datetime.datetime.today() - datetime.timedelta(days=29)
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/60?languages=en&watchnow=free' %
+                                  (datestring.strftime('%d-%m-%Y')))
+
+        if trakt_list is None:
+            return
+        # For some reason trakt messes up their list and spits out tons of duplicates so we filter it
+        duplicate_filter = []
+        temp_list = []
+        for i in trakt_list:
+            if not i['show']['ids']['tvdb'] in duplicate_filter:
+                duplicate_filter.append(i['show']['ids']['tvdb'])
+                temp_list.append(i)
+
+        trakt_list = temp_list
+
+        trakt_list = [i for i in trakt_list if i['show']['ids']['trakt'] not in hidden]
+
+        if len(trakt_list) > 40:
+            trakt_list = trakt_list[:40]
+        self.showListBuilder(trakt_list)
+        tools.closeDirectory('tvshows')
+
+    def tvMyCalendarToday(self):
+        today = datetime.date.today()
+        upcoming_episodes = database.get(trakt.json_response, 24, 'calendars/my/shows/%s/1' % today)
+
+        sort = sorted(upcoming_episodes, key=lambda i: i['first_aired'])
+        sort = [i['episode']['ids']['trakt'] for i in sort]
+        sort = {'type': None, 'id_list': sort}
+        self.mixedEpisodeBuilder(upcoming_episodes, sort=sort, hide_watched=False, hide_unaired=False,
+                                 prepend_date=True)
+        tools.closeDirectory('episodes')
+
+    def tvMyCalendarYesterday(self):
+        yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+        upcoming_episodes = database.get(trakt.json_response, 24, 'calendars/my/shows/%s/1' % yesterday)
+
+        sort = sorted(upcoming_episodes, key=lambda i: i['first_aired'])
+        sort = [i['episode']['ids']['trakt'] for i in sort]
+        sort = {'type': None, 'id_list': sort}
+        self.mixedEpisodeBuilder(upcoming_episodes, sort=sort, hide_watched=False, hide_unaired=False,
+                                 prepend_date=True)
+        tools.closeDirectory('episodes')
+
+    def tvMyCalendarTomorrow(self):
+        tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+        upcoming_episodes = database.get(trakt.json_response, 24, 'calendars/my/shows/%s/1' % tomorrow)
+
+        sort = sorted(upcoming_episodes, key=lambda i: i['first_aired'])
+        sort = [i['episode']['ids']['trakt'] for i in sort]
+        sort = {'type': None, 'id_list': sort}
+        self.mixedEpisodeBuilder(upcoming_episodes, sort=sort, hide_watched=False, hide_unaired=False,
+                                 prepend_date=True)
+        tools.closeDirectory('episodes')
+
+    def tvMyCalendarNextWeek(self):
+        tomorrow = (datetime.date.today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+        upcoming_episodes = database.get(trakt.json_response, 24, 'calendars/my/shows/%s/7' % tomorrow)
+
+        sort = sorted(upcoming_episodes, key=lambda i: i['first_aired'])
+        sort = [i['episode']['ids']['trakt'] for i in sort]
+        sort = {'type': None, 'id_list': sort}
+        self.mixedEpisodeBuilder(upcoming_episodes, sort=sort, hide_watched=False, hide_unaired=False,
+                                 prepend_date=True)
+        tools.closeDirectory('episodes')
+
+    def tvMyCalendarPreviousWeek(self):
+        tomorrow = (datetime.date.today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
+        upcoming_episodes = database.get(trakt.json_response, 24, 'calendars/my/shows/%s/7' % tomorrow)
+
+        sort = sorted(upcoming_episodes, key=lambda i: i['first_aired'])
+        sort = [i['episode']['ids']['trakt'] for i in sort]
+        sort = {'type': None, 'id_list': sort}
+        self.mixedEpisodeBuilder(upcoming_episodes, sort=sort, hide_watched=False, hide_unaired=False,
+                                 prepend_date=True)
+        tools.closeDirectory('episodes')
+
+    def showsIMDBTop(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/justin/lists/imdb-top-rated-tv-shows/items/show?page=%s&extended=full' % page)
+        if trakt_list is None:
+            return
+        self.showListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'showsIMDBTop&page=%s' % (int(page) + 1), '', '')
+        tools.closeDirectory('tvshows')
+
+    def showsRollingStoneTop(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/redouaaane/lists/rolling-stone-s-100-greatest-tv-shows-of-all-time/items/show?page=%s&extended=full' % page)
+        if trakt_list is None:
+            return
+        self.showListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'showsRollingStoneTop&page=%s' % (int(page) + 1), '', '')
+        tools.closeDirectory('tvshows')
+
+    def showsAiringAll(self):
+        hidden_shows = HiddenDatabase().get_hidden_items('calendar', 'shows')
+        datestring = datetime.datetime.today()
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/1?languages=en&countries=gb,us' %
+                                  datestring.strftime('%d-%m-%Y'))
+        if trakt_list is None:
+            return
+        trakt_list = [i for i in trakt_list if i['show']['ids']['trakt'] not in hidden_shows]
+        self.mixedEpisodeBuilder(trakt_list)
+        tools.closeDirectory('episodes')
+
+    def showsAiringNewsTalk(self):
+        hidden_shows = HiddenDatabase().get_hidden_items('calendar', 'shows')
+        datestring = datetime.datetime.today()
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/1?genres=news,talk-show&languages=en&countries=gb,us' %
+                                  datestring.strftime('%d-%m-%Y'))
+        if trakt_list is None:
+            return
+        trakt_list = [i for i in trakt_list if i['show']['ids']['trakt'] not in hidden_shows]
+        self.mixedEpisodeBuilder(trakt_list)
+        tools.closeDirectory('episodes')
+
+    def showsAiringReality(self):
+        datestring = datetime.datetime.today()
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/1?genres=reality,game-show&languages=en' %
+                                  datestring.strftime('%Y-%m-%d'))
+        tools.log(trakt_list, 'error')
+        if trakt_list is None:
+            return
+        self.mixedEpisodeBuilder(trakt_list)
+        tools.closeDirectory('episodes')
+
+    def showsAiringTV(self):
+        datestring = datetime.datetime.today()
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/shows/%s/1?genres=-game-show,-news,-reality,-soap,-talk-show&languages=en&countries=gb,us' %
+                                  datestring.strftime('%Y-%m-%d'))
+        if trakt_list is None:
+            return
+        self.mixedEpisodeBuilder(trakt_list)
+        tools.closeDirectory('episodes')
 
     def myShowCollection(self):
         trakt_list = TraktSyncDatabase().get_collected_episodes()

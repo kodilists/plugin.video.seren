@@ -65,6 +65,7 @@ class Menus:
         tools.addDirectoryItem(tools.lang(32062), 'movieGenres&page=1', '', '')
         tools.addDirectoryItem(tools.lang(40123), 'movieYears', '', '')
         tools.addDirectoryItem(tools.lang(40151), 'movieByActor', '', '')
+        tools.addDirectoryItem('Movie Lists', 'movieLists', '', '')
 
         # tools.addDirectoryItem('Years', 'movieYears', '', '')
         if tools.getSetting('searchHistory') == 'false':
@@ -72,6 +73,213 @@ class Menus:
         else:
             tools.addDirectoryItem(tools.lang(32016), 'moviesSearchHistory', '', '')
         tools.closeDirectory('addons')
+
+    def movieLists(self):
+        tools.addDirectoryItem('Rotten Tomatoes', 'movieListsRT', '', '')
+        tools.addDirectoryItem('IMDB', 'movieListsIMDB', '', '')
+        tools.addDirectoryItem('Academy Awards', 'movieListsOscars', '', '')
+        tools.addDirectoryItem('Golden Globes', 'movieListsGlobes', '', '')
+        tools.addDirectoryItem('New on Netflix', 'movieListsNewNetflix', '', '')
+        tools.addDirectoryItem('New on Amazon', 'movieListsNewAmazon', '', '')
+        tools.closeDirectory('addons')
+
+    def movieListsRT(self):
+        tools.addDirectoryItem('Best of 2019', 'movieListsRT2019&page=1', '', '')
+        tools.addDirectoryItem('Best of 2018', 'movieListsRT2018&page=1', '', '')
+        tools.addDirectoryItem('Best of 2017', 'movieListsRT2017&page=1', '', '')
+        tools.addDirectoryItem('Best Horror Movies Of All Time', 'movieListsRTHorror&page=1', '', '')
+        tools.addDirectoryItem('The 150 Best Romantic Comedies Of All Time', 'movieListsRTRC&page=1', '', '')
+        tools.addDirectoryItem('Top 100 Movies Of All Time', 'movieListsRT100&page=1', '', '')
+        tools.closeDirectory('addons')
+
+    def movieListsIMDB(self):
+        tools.addDirectoryItem('IMDB Top 250', 'movieListsIMDB250&page=1', '', '')
+        tools.addDirectoryItem('IMDB Lowest Rated', 'movieListsIMDBWorst&page=1', '', '')
+        tools.addDirectoryItem('IMDB Popular Movies', 'movieListsIMDBPopular&page=1', '', '')
+        tools.closeDirectory('addons')
+
+    def movieListsOscars(self):
+        tools.addDirectoryItem('2019 Nominees & Winners', 'movieListsOscars2019&page=1', '', '')
+        tools.addDirectoryItem('2018 Nominees & Winners', 'movieListsOscars2018&page=1', '', '')
+        tools.addDirectoryItem('2017 Nominees & Winners', 'movieListsOscars2017&page=1', '', '')
+        tools.closeDirectory('addons')
+
+    def movieListsGlobes(self):
+        tools.addDirectoryItem('2019 Nominees & Winners', 'movieListsGlobes2019&page=1', '', '')
+        tools.addDirectoryItem('2018 Nominees & Winners', 'movieListsGlobes2018&page=1', '', '')
+        tools.addDirectoryItem('2017 Nominees & Winners', 'movieListsGlobes2017&page=1', '', '')
+        tools.closeDirectory('addons')
+
+    def movieListsNewNetflix(self):
+
+        datestring = (datetime.date.today() - datetime.timedelta(days=29)).strftime('%Y-%m-%d')
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/movies/%s/30?langauges=en&watchnow=netflix' % datestring)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.closeDirectory('movies')
+
+    def movieListsNewAmazon(self):
+
+        datestring = (datetime.date.today() - datetime.timedelta(days=29)).strftime('%Y-%m-%d')
+        trakt_list = database.get(trakt.json_response, 12, 'calendars/all/movies/%s/30?langauges=en&watchnow=amazon_buy,amazon_prime' % datestring)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.closeDirectory('movies')
+
+    def movieListsGlobes2019(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/andreofgyn/lists/2019-golden-globe-nominees-winners/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsGlobes2019&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsGlobes2018(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/andreofgyn/lists/2018-golden-globe-nominees-winners/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsGlobes2018&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsGlobes2017(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/andreofgyn/lists/2017-golden-globe-nominees-winners/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsGlobes2017&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+
+    def movieListsOscars2019(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/andreofgyn/lists/2019-oscar-nominees-winners/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsOscars2019&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsOscars2018(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/andreofgyn/lists/2018-oscar-nominees-winners/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsOscars2018&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsOscars2017(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/andreofgyn/lists/2017-oscar-nominees-winners/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsOscars2017&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsIMDB250(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/justin/lists/imdb-top-rated-movies/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsIMDB250&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsIMDBWorst(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/justin/lists/imdb-lowest-rated-movies/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsIMDBWorst&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsIMDBPopular(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/justin/lists/imdb-popular-movies/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsIMDBPopular&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsRT2019(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/lish408/lists/rotten-tomatoes-best-of-2019/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsRT2019&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsRT2018(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/lish408/lists/rotten-tomatoes-best-of-2018/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsRT2018&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsRT2017(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/lish408/lists/rotten-tomatoes-best-of-2017/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsRT2017&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsRTHorror(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/lish408/lists/rotten-tomatoes-best-horror-movies-of-all-time/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsRTHorror&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsRTRC(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/lish408/lists/rotten-tomatoes-the-150-best-romantic-comedies-of-all-time/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsRTRC&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
+
+    def movieListsRT100(self, page):
+        trakt_list = database.get(trakt.json_response, 12, 'users/lish408/lists/rotten-tomatoes-top-100-movies-of-all-time/items/movie?page=%s' % page)
+
+        if trakt_list is None:
+            return
+        self.commonListBuilder(trakt_list)
+        tools.addDirectoryItem(tools.lang(32019), 'movieListsRT100&page=%s' % (int(page) + 1), '', '',
+                               isFolder=True)
+        tools.closeDirectory('movies')
 
     def myMovies(self):
         tools.addDirectoryItem(tools.lang(32063), 'onDeckMovies', None, None)

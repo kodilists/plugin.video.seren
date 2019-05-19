@@ -75,6 +75,16 @@ if action == 'moviesHome':
 
     movieMenus.Menus().discoverMovies()
 
+if action == 'movieListsNewNetflix':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsNewNetflix()
+
+if action == 'movieListsNewAmazon':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsNewAmazon()
+
 if action == 'moviesPopular':
     from resources.lib.gui import movieMenus
 
@@ -134,6 +144,106 @@ if action == 'myMovies':
     from resources.lib.gui import movieMenus
 
     movieMenus.Menus().myMovies()
+
+if action == 'movieLists':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieLists()
+
+if action == 'movieListsRT':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRT()
+
+if action == 'movieListsIMDB':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsIMDB()
+
+if action == 'movieListsGlobes':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsGlobes()
+
+if action == 'movieListsGlobes2019':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsGlobes2019(page)
+
+if action == 'movieListsGlobes2018':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsGlobes2018(page)
+
+if action == 'movieListsGlobes2017':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsGlobes2017(page)
+
+if action == 'movieListsOscars':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsOscars()
+
+if action == 'movieListsOscars2019':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsOscars2019(page)
+
+if action == 'movieListsOscars2018':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsOscars2018(page)
+
+if action == 'movieListsOscars2017':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsOscars2017(page)
+
+if action == 'movieListsRT2019':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRT2019(page)
+
+if action == 'movieListsRT2018':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRT2018(page)
+
+if action == 'movieListsRT2017':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRT2017(page)
+
+if action == 'movieListsRTHorror':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRTHorror(page)
+
+if action == 'movieListsRTRC':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRTRC(page)
+
+if action == 'movieListsRT100':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsRT100(page)
+
+if action == 'movieListsIMDB250':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsIMDB250(page)
+
+if action == 'movieListsIMDBWorst':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsIMDBWorst(page)
+
+if action == 'movieListsIMDBPopular':
+    from resources.lib.gui import movieMenus
+
+    movieMenus.Menus().movieListsIMDBPopular(page)
 
 if action == 'moviesMyCollection':
     from resources.lib.gui import movieMenus
@@ -308,6 +418,96 @@ if action == 'myShows':
     from resources.lib.gui import tvshowMenus
 
     tvshowMenus.Menus().myShows()
+
+if action == 'showsLists':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsLists()
+
+if action == 'showsNewNetflix':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsNewNetflix()
+
+if action == 'showsNewAmazon':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsNewAmazon()
+
+if action == 'showsNewCable':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsNewCable()
+
+if action == 'tvMyCalendar':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendar()
+
+if action == 'tvMyCalendarYesterday':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendarYesterday()
+
+if action == 'tvMyCalendarToday':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendarToday()
+
+if action == 'tvMyCalendarTomorrow':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendarTomorrow()
+
+if action == 'tvMyCalendarWeek':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendarWeek()
+
+if action == 'tvMyCalendarPreviousWeek':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendarPreviousWeek()
+
+if action == 'tvMyCalendarNextWeek':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvMyCalendarNextWeek()
+
+if action == 'showsIMDBTop':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsIMDBTop(page)
+
+if action == 'showsRollingStoneTop':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsRollingStoneTop(page)
+
+if action == 'tvAiringToday':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().tvAiringToday()
+
+if action == 'showsAiringAll':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsAiringAll()
+
+if action == 'showsAiringReality':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsAiringReality()
+
+if action == 'showsAiringNewsTalk':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsAiringNewsTalk()
+
+if action == 'showsAiringTV':
+    from resources.lib.gui import tvshowMenus
+
+    tvshowMenus.Menus().showsAiringTV()
 
 if action == 'showsMyCollection':
     from resources.lib.gui import tvshowMenus
