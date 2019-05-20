@@ -202,7 +202,6 @@ class TraktAPI:
 
         try:
             response = requests.delete(url, headers=self.headers)
-
             if response.status_code == 401:
                 if refreshCheck == False:
                     self.refreshToken()

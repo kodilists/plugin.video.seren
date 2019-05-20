@@ -33,12 +33,12 @@ class SmartPlay:
     def smart_play_show(self, append_playlist=False):
 
         self.window = windows.smart_play_background()
-
         self.window.setBackground(self.poster)
-
         self.window.setText(tools.lang(32094))
+
         if not append_playlist:
             self.window.show()
+
         self.window.setProgress(0)
         self.window.setProgress(40)
         self.window.setText(tools.lang(32095))
@@ -80,7 +80,8 @@ class SmartPlay:
                     continue
 
                 # If the episode is confirmed ok, add it to our playlist.
-                tools.playList.add(url=i[0], listitem=i[1])
+                if tvshowMenus.Menus().is_aired(actionArgs['episodeInfo']['info']):
+                    tools.playList.add(url=i[0], listitem=i[1])
             return
 
         season_episodes = tvshowMenus.Menus().episodeListBuilder(self.show_trakt_id, season, smartPlay=True)
@@ -94,7 +95,8 @@ class SmartPlay:
             path_arguments = dict(tools.parse_qsl(ep[0].replace('?', '')))
             episode_args = json.loads(tools.unquote(path_arguments['actionArgs']))
             ep_no = int(episode_args['episodeInfo']['info']['episode'])
-            if ep_no >= episode:
+
+            if ep_no >= episode and tvshowMenus.Menus().is_aired(episode_args['episodeInfo']['info']):
                 playlist.append(ep)
 
         self.window.setText('Starting Playback')

@@ -116,7 +116,7 @@ class Menus:
             sort_how = trakt.response_headers['X-Sort-How']
             trakt_list = trakt.sort_list(sort_by, sort_how, trakt_list, 'show')
         except:
-            tools.log('Failed to sort trakt list by response headers')
+            tools.log('Failed to sort trakt list by response headers', 'error')
             pass
         self.showListBuilder(trakt_list)
         tools.closeDirectory('tvshows')
@@ -227,6 +227,8 @@ class Menus:
 
             self.itemList.append(episode_dict)
         except:
+            import traceback
+            traceback.print_exc()
             pass
 
     def myRecentEpisodes(self):
@@ -512,6 +514,10 @@ class Menus:
 
         self.itemList = sorted(self.itemList, key=lambda k: k['info']['season'])
 
+        if len(self.itemList) == 0:
+            tools.log('We received no titles to build a list', 'error')
+            return
+
         hide_specials = False
 
         if tools.getSetting('general.hideSpecials') == 'true':
@@ -574,6 +580,10 @@ class Menus:
 
             self.itemList = TraktSyncDatabase().get_season_episodes(show_id, season_number)
             self.itemList = [x for x in self.itemList if x is not None and 'info' in x]
+
+            if len(self.itemList) == 0:
+                tools.log('We received no titles to build a list', 'error')
+                return
 
             try:
                 self.itemList = sorted(self.itemList, key=lambda k: k['info']['episode'])
@@ -654,7 +664,9 @@ class Menus:
         self.threadList = []
 
         try:
-            if len(trakt_list) == 0: return
+            if len(trakt_list) == 0:
+                tools.log('We received no titles to build a list', 'error')
+                return
 
             self.itemList = TraktSyncDatabase().get_episode_list(trakt_list)
 
@@ -779,8 +791,11 @@ class Menus:
 
         try:
             if len(trakt_list) == 0:
+                tools.log('We received no titles to build a list', 'error')
                 return
         except:
+            import traceback
+            traceback.print_exc()
             return
 
         if 'show' in trakt_list[0]:
@@ -898,6 +913,8 @@ class Menus:
             try:
                 target[0](*target[1])
             except:
+                import traceback
+                traceback.print_exc()
                 pass
 
     def is_aired(self, info):
@@ -908,13 +925,18 @@ class Menus:
                 return False
             if int(air_date[:4]) < 1970:
                 return True
-            air_date = tools.gmt_to_local(air_date)
+
+            time_format = tools.trakt_gmt_format
+            if len(air_date) == 10:
+                time_format = '%Y-%m-%d'
+
+            air_date = tools.gmt_to_local(air_date, format=time_format)
 
             if tools.getSetting('general.datedelay') == 'true':
-                air_date = tools.datetime_workaround(air_date, tools.trakt_gmt_format, False)
+                air_date = tools.datetime_workaround(air_date, time_format, False)
                 air_date += datetime.timedelta(days=1)
             else:
-                air_date = tools.datetime_workaround(air_date, tools.trakt_gmt_format, False)
+                air_date = tools.datetime_workaround(air_date, time_format, False)
 
             if air_date > datetime.datetime.now():
                 return False

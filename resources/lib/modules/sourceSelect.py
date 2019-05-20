@@ -6,6 +6,7 @@ import threading
 from resources.lib.common import tools
 
 def build_display_title(source):
+
     if 'debrid_provider' in source:
         debrid_provider = tools.colorString(tools.shortened_debrid(source.get('debrid_provider', '')))
         if debrid_provider != '':
@@ -25,7 +26,7 @@ def build_display_title(source):
 
     title = ''
 
-    if source['type'] == 'torrent':
+    if source['type'] == 'torrent' or source['type'] == 'cloud':
         size = tools.colorString(tools.source_size_display(source['size']))
         title = "%s |%s %s | %s %s\n%s" % (
             quality,
