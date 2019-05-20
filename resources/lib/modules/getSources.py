@@ -8,7 +8,7 @@ import re
 import sys
 import threading
 import time
-import traceback
+import requests
 
 from resources.lib.common import source_utils
 from resources.lib.common import tools
@@ -137,10 +137,16 @@ class Sources(tools.dialogWindow):
                 if self.display_style == 1:
                     self.background_dialog.create('%s (%s)' % (self.args['title'], self.args['year']))
 
+                # Confirm movie year against IMDb's information
+
             self.setText(tools.lang(32081))
             self.setBackground(background)
 
-            local_check_threads = []
+            if not 'showInfo' in self.args:
+                resp = requests.get('https://v2.sg.media-imdb.com/suggestion/t/%s.json' % self.args['ids']['imdb'])
+                year = json.loads(resp.text)['d'][0]['y']
+                if year != self.args['year']:
+                    self.args['year'] = str(year)
 
             try:
                 self.getLocalTorrentResults()
@@ -230,6 +236,9 @@ class Sources(tools.dialogWindow):
             self.build_cache_assist()
 
             # Returns empty list if no sources are found, otherwise sort sources
+            cached = [i['hash'] for i in self.torrentCacheSources]
+            uncached = [i for i in self.allTorrents if i['hash'] not in cached]
+
             if len(self.torrentCacheSources) + len(self.hosterSources) + len(self.cloud_files) == 0:
                 try:
                     tools.playList.clear()
@@ -239,16 +248,13 @@ class Sources(tools.dialogWindow):
                 if self.silent:
                     tools.showDialog.notification(tools.addonName, tools.lang(32085))
 
-                self.return_data = ([], self.args)
+                self.return_data = (uncached, [], self.args)
                 self.close()
                 return
 
             sorted = self.sortSources(self.torrentCacheSources, self.hosterSources)
-            cached = [i['hash'] for i in self.torrentCacheSources]
-            uncached = [i for i in self.allTorrents if i['hash'] not in cached]
 
             self.return_data = [uncached, sorted, self.args]
-            print(self.return_data)
             self.close()
             return
 
@@ -604,6 +610,7 @@ class Sources(tools.dialogWindow):
         return
 
     def user_cloud_inspection(self):
+        self.remainingProviders.append('Cloud Inspection')
         threads = []
 
         if tools.premiumize_enabled() and tools.getSetting('premiumize.cloudInspection') == 'true':
@@ -618,6 +625,8 @@ class Sources(tools.dialogWindow):
         for i in threads:
             i.join()
 
+        self.remainingProviders.remove('Cloud Inspection')
+
     def rd_cloud_inspection(self):
 
         torrents = real_debrid.RealDebrid().list_torrents()
@@ -625,6 +634,8 @@ class Sources(tools.dialogWindow):
         if 'episodeInfo' in self.args:
             torrent_simple_info = self.buildSimpleShowInfo(self.args)
             for i in torrents:
+                if self.prem_terminate():
+                    return
                 if source_utils.filter_show_pack(torrent_simple_info, i['filename']) \
                         or source_utils.filter_season_pack(torrent_simple_info, i['filename'])\
                         or source_utils.filter_single_episode(torrent_simple_info, i['filename']):
@@ -663,6 +674,7 @@ class Sources(tools.dialogWindow):
         else:
 
             for i in torrents:
+                if self.prem_terminate(): return
                 if source_utils.filter_movie_title(i['filename'], self.args['title'], self.args['year']):
 
                     torrent_info = real_debrid.RealDebrid().torrentInfo(i['id'])
@@ -698,10 +710,10 @@ class Sources(tools.dialogWindow):
         if 'episodeInfo' in self.args:
             torrent_simple_info = self.buildSimpleShowInfo(self.args)
 
-
         for item in cloud_items:
+            if self.prem_terminate():
+                return
             selected_file = None
-            base_name = item['name']
             if item['type'] == 'file':
                 if 'episodeInfo' in self.args:
                     if source_utils.filter_single_episode(torrent_simple_info, item['name']):
@@ -712,74 +724,82 @@ class Sources(tools.dialogWindow):
 
             else:
                 if 'episodeInfo' in self.args:
-                    folder_id = item['id']
-
-                    if not self.premiumize_folder_inspection(item, torrent_simple_info) or not \
-                            source_utils.filter_single_episode(torrent_simple_info, item['name']):
+                    if not self.premiumize_folder_inspection(item, torrent_simple_info):
                         continue
-                    while not selected_file:
-                        try:
-                            folder_items = premiumize.PremiumizeFunctions().list_folder(folder_id)
-                            for folder_item in folder_items:
-                                if folder_item['type'] is 'folder' \
-                                        and self.premiumize_folder_inspection(folder_item, torrent_simple_info):
-                                    folder_id = folder_item['id']
-                                    break
 
-                            else:
-                                for folder_item in folder_items:
-                                    if self.premiumize_folder_inspection(folder_item, torrent_simple_info):
-                                        if not any(folder_item['name'].lower().endswith(extension) for extension in
-                                                   source_utils.COMMON_VIDEO_EXTENSIONS):
-                                            continue
-                                        selected_file = folder_item
-                                        break
-                                else:
-                                    break
-                        except:
-                            break
+                    try:
+                        selected_file = self.premiumize_folder_digger(item['id'], torrent_simple_info)
+                    except:
+                        return
                 else:
-                    if source_utils.filter_movie_title(item['name'], self.args['title'], self.args['year']):
-                        if item['type'] == 'folder':
-                            folder_items = premiumize.PremiumizeFunctions().list_folder(item['id'])
-                            for folder_item in folder_items:
-                                if source_utils.filter_movie_title(folder_item['name'],
-                                                                   self.args['title'],
-                                                                   self.args['year']):
-                                    if not any(folder_item['name'].lower().endswith(extension) for extension in
-                                               source_utils.COMMON_VIDEO_EXTENSIONS):
-                                        continue
-                                    selected_file = folder_item
-                            else:
-                                break
-                        else:
-                            selected_file = item
-                            break
+                    if not source_utils.filter_movie_title(item['name'], self.args['title'], self.args['year']):
+                        continue
+
+                    try:
+                        selected_file = self.premiumize_folder_digger(item['id'], self.args)
+                    except:
+                        import traceback
+                        traceback.print_exc()
+                        continue
 
             if selected_file:
-                print('adding cloud - %s' % selected_file)
                 if tools.getSetting('premiumize.transcoded') == 'true':
                     url = selected_file['stream_link']
                 else:
                     url = selected_file['link']
-
+                try:
+                    size = (int(selected_file['size']) / 1024) /1024
+                except:
+                    size = 0
                 self.cloud_files.append({
                     'source': 'Premiumize Cloud',
-                    'quality': source_utils.getQuality(base_name),
+                    'quality': source_utils.getQuality(selected_file['name']),
                     'language': self.language,
                     'url': url,
-                    'direct': False,
-                    'debridonly': True,
                     'provider': 'Premiumize Cloud',
                     'type': 'cloud',
-                    'release_title': base_name,
-                    'info': source_utils.getInfo(base_name),
-                    'debrid_provider': 'premiumize'
+                    'release_title': selected_file['name'],
+                    'info': source_utils.getInfo(selected_file['name']),
+                    'debrid_provider': 'premiumize',
+                    'size': size
                 })
 
+    def premiumize_folder_digger(self, folder_id, item_information):
+        if self.prem_terminate():
+            return
+        found_item = None
+        folder_items = premiumize.PremiumizeFunctions().list_folder(folder_id)
+
+        for folder_item in folder_items:
+            if self.prem_terminate():
+                return
+            if folder_item['type'] == 'folder':
+                folder_id = folder_item['id']
+                found_item = self.premiumize_folder_digger(folder_id, item_information)
+                if found_item is None:
+                    continue
+            else:
+                if 'show_title' in item_information:
+                    if source_utils.filter_single_episode(item_information, folder_item['name']) and \
+                            any(folder_item['name'].lower().endswith(extension) for
+                                extension in source_utils.COMMON_VIDEO_EXTENSIONS):
+                        return folder_item
+                    else:
+                        continue
+                else:
+                    if source_utils.filter_movie_title(folder_item['name'], item_information['title'],
+                                                       item_information['year']):
+                        if not any(folder_item['name'].lower().endswith(extension) for extension in
+                                   source_utils.COMMON_VIDEO_EXTENSIONS):
+                            continue
+
+                        return folder_item
+
+        return found_item
+
     def premiumize_folder_inspection(self, folder_item, torrent_simple_info):
-        if source_utils.filter_show_pack(torrent_simple_info, folder_item['name']) or\
-                source_utils.filter_season_pack(torrent_simple_info, folder_item['name']) or \
+        if source_utils.filter_show_pack(torrent_simple_info, folder_item['name']) or \
+            source_utils.filter_season_pack(torrent_simple_info, folder_item['name']) or \
                 source_utils.filter_single_episode(torrent_simple_info, folder_item['name']):
             return True
         else:
@@ -906,10 +926,10 @@ class Sources(tools.dialogWindow):
                         continue
 
         if tools.getSetting('general.disable265') == 'true':
-            sortedList = [i for i in sortedList if 'x265' not in i['info'] and i['type'] != 'cloud']
+            sortedList = [i for i in sortedList if 'x265' not in i['info']]
 
         if tools.getSetting('general.hidesd') == 'true':
-            sortedList = [i for i in sortedList if i['quality'] != 'SD' and i['type'] != 'cloud']
+            sortedList = [i for i in sortedList if i['quality'] != 'SD']
 
         return sortedList
 

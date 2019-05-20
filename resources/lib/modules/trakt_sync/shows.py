@@ -6,7 +6,6 @@ from datetime import datetime
 from resources.lib.modules import trakt_sync
 from resources.lib.indexers import trakt
 from resources.lib.indexers import tvdb
-from resources.lib.common import tools
 from resources.lib.modules import database
 
 class TraktSyncDatabase(trakt_sync.TraktSyncDatabase):
@@ -298,6 +297,8 @@ class TraktSyncDatabase(trakt_sync.TraktSyncDatabase):
                 episode = self.update_episode_playcount(episode)
                 meta_list.append(episode['kodi_meta'])
             except:
+                import traceback
+                traceback.print_exc()
                 pass
 
         return meta_list
@@ -547,12 +548,16 @@ class TraktSyncDatabase(trakt_sync.TraktSyncDatabase):
                item['kodi_meta'] = self.clean_episode_showinfo(item['kodi_meta'])
                item = self.update_episode_playcount(item)
         except:
+            import traceback
+            traceback.print_exc()
             pass
 
         if list_mode:
             try:
                 self.item_list.append(copy.deepcopy(item['kodi_meta']))
             except:
+                import traceback
+                traceback.print_exc()
                 pass
         else:
             return item['kodi_meta']
@@ -577,6 +582,8 @@ class TraktSyncDatabase(trakt_sync.TraktSyncDatabase):
             else:
                 item['kodi_meta']['info']['playcount'] = 0
         except:
+            import traceback
+            traceback.print_exc()
             pass
 
         return item
@@ -616,6 +623,8 @@ class TraktSyncDatabase(trakt_sync.TraktSyncDatabase):
 
             return {'trakt_id': trakt_id, 'kodi_meta': kodi_meta, 'last_updated': update_time}
         except:
+            import traceback
+            traceback.print_exc()
             pass
 
     def _update_season(self, show_meta, season_meta, get_meta=True):

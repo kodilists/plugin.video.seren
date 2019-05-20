@@ -280,10 +280,8 @@ class serenPlayer(tools.player):
                     self.playback_resumed = True
 
                 try:
-                    position = self.getTime()
-                    self.current_time = position
-                    total_length = self.getTotalTime()
-                    self.media_length = total_length
+                    self.current_time = self.getTime()
+                    self.media_length = self.getTotalTime()
                 except:
                     pass
 
